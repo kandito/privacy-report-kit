@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PrivacyReport",
+  "type": "object",
+  "required": ["generated_at", "project", "fields", "processing", "transfers", "integrations", "recommendations", "ropa"],
+  "properties": {
+    "generated_at": { "type": "string", "format": "date-time" },
+    "project": {
+      "type": "object",
+      "required": ["name", "repo", "language_guess"],
+      "properties": {
+        "name": { "type": "string" },
+        "repo": { "type": "string" },
+        "language_guess": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "category", "code_refs", "storage"],
+        "properties": {
+          "name": { "type": "string" },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "category": { "type": "string", "enum": ["PII", "Sensitive", "Financial", "Auth", "Device", "Usage", "Other"] },
+          "purpose": { "type": "string" },
+          "legal_basis": { "type": "string" },
+          "retention": { "type": "string" },
+          "code_refs": {
+            "type": "array",
+            "items": { "type": "object", "required": ["path", "line"], "properties": {
+              "path": { "type": "string" }, "line": { "type": "integer" }, "snippet": { "type": "string" }
+            } }
+          },
+          "storage": {
+            "type": "object",
+            "required": ["db_table", "db_column"],
+            "properties": {
+              "db_table": { "type": "string" },
+              "db_column": { "type": "string" },
+              "encryption": { "type": "string", "enum": ["at_rest", "in_transport", "app_level", "none", "unknown"] },
+              "indexing": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "processing": {
+      "type": "array",
+      "description": "Business processes on the data",
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "data_subjects", "operations"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "data_subjects": { "type": "array", "items": { "type": "string" } },
+          "operations": { "type": "array", "items": { "type": "string", "enum": ["collect","store","transform","analyze","share","erase","archive"] } },
+          "controllers_processors": { "type": "string" }
+        }
+      }
+    },
+    "transfers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["destination", "mechanism"],
+        "properties": {
+          "destination": { "type": "string" },
+          "mechanism": { "type": "string", "enum": ["API","Webhook","ETL","Batch","Email","Other"] },
+          "purpose": { "type": "string" },
+          "frequency": { "type": "string" }
+        }
+      }
+    },
+    "integrations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "endpoints"],
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["SaaS","Payment","Analytics","Ads","Messaging","Storage","Other"] },
+          "endpoints": { "type": "array", "items": { "type": "string" } },
+          "data_shared": { "type": "array", "items": { "type": "string" } },
+          "dpa_scc": { "type": "string" }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": { "type": "object", "required": ["priority","title","action"], "properties": {
+        "priority": { "type": "string", "enum": ["P0","P1","P2"] },
+        "title": { "type": "string" },
+        "action": { "type": "string" },
+        "references": { "type": "array", "items": { "type": "string" } }
+      } }
+    },
+    "ropa": {
+      "type": "object",
+      "required": ["controller","dpo","joint_controllers","dpia_required","lawful_basis","retention_policy","safeguards"],
+      "properties": {
+        "controller": { "type": "string" },
+        "dpo": { "type": "string" },
+        "joint_controllers": { "type": "array", "items": { "type": "string" } },
+        "dpia_required": { "type": "boolean" },
+        "lawful_basis": { "type": "array", "items": { "type": "string" } },
+        "retention_policy": { "type": "string" },
+        "safeguards": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
+

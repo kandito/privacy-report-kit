@@ -1,0 +1,66 @@
+# .gemini/commands/privacy-report.toml
+name = "privacy-report"
+description = "Scan selected paths (default: repo) and generate a ROPA-ready privacy report JSON."
+version = "1.1.0"
+
+prompt = """
+SYSTEM:
+You are a Data Privacy Analyst generating a software-aware ROPA draft.
+You MUST return a single JSON document following the 'PrivacyReport' schema.
+If details are unknown, use "unknown". Prefer concrete evidence from code over speculation.
+
+USER:
+Repository context:
+- Project name: {{project_name}}
+- Repo path: {{cwd}}
+- Language guess (heuristic): {{language_guess}}
+
+Scan scope (user-chosen):
+!{ bash -lc '
+  if [ -z "{{args}}" ]; then
+    echo "· paths: . (default)"
+  else
+    echo "· paths: {{args}}"
+  fi
+' }
+
+# Dynamically include chosen directories.
+!{ bash -lc '
+  if [ -z "{{args}}" ]; then
+    echo "@."
+  else
+    for d in {{args}}; do
+      d="${d#@}"
+      [ -e "$d" ] && echo "@$d"
+    done
+  fi
+' }
+
+Static signals (grep/sql/orm) from the chosen scope:
+!{ bash -lc '
+  bash "$HOME/.gemini/packs/privacy-report-kit/tools/collect-privacy-context.sh" {{args}} 2>/dev/null || true
+' }
+
+Schema shape (guidance only — do NOT echo; just produce JSON):
+# This @-include is also portable now.
+@$HOME/.gemini/packs/privacy-report-kit/schemas/privacy_report.schema.json
+
+TASK:
+1) Identify data fields (PII/sensitive/etc.) and map to code refs + DB (table/column) when visible.
+2) Summarize processing activities (subjects, purpose, operations).
+3) List data transmissions (mechanism, destination, frequency).
+4) Enumerate external integrations (name, endpoints, data_shared, DPA/SCC if known).
+5) Provide prioritized recommendations (P0..P2).
+6) Populate the 'ropa' block with best-knowledge defaults; leave org identities blank if unknown.
+
+OUTPUT:
+Return ONLY a single valid JSON object exactly matching the schema (no markdown fence, no prose).
+"""
+
+[inputs]
+project_name   = "!{basename \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"}"
+cwd            = "!{pwd}"
+language_guess = "!{ls -1 | tr '[:upper:]' '[:lower:]' | grep -E '\\.(ts|tsx|js|py|go|java|kt|rb|php|rs|cs)$' | sed 's/.*\\.//' | sort | uniq | tr '\\n' ',' | sed 's/,$//'}"
+
+[metadata]
+category = "privacy"
