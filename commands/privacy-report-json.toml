@@ -1,5 +1,5 @@
-# .gemini/commands/privacy-report.toml
-name = "privacy-report"
+# .gemini/commands/privacy-report-json.toml
+name = "privacy-report-json"
 description = "Scan selected paths (default: repo) and generate a ROPA-ready privacy report JSON."
 version = "1.1.0"
 
@@ -8,6 +8,9 @@ SYSTEM:
 You are a Data Privacy Analyst generating a software-aware ROPA draft.
 You MUST return a single JSON document following the 'PrivacyReport' schema.
 If details are unknown, use "unknown". Prefer concrete evidence from code over speculation.
+
+
+
 
 USER:
 Repository context:
@@ -54,7 +57,8 @@ TASK:
 6) Populate the 'ropa' block with best-knowledge defaults; leave org identities blank if unknown.
 
 OUTPUT:
-Return ONLY a single valid JSON object exactly matching the schema (no markdown fence, no prose).
+Return ONLY a single valid JSON object exactly matching the schema (no markdown fence, no prose) 
+and store it to privacy/report.json.
 """
 
 [inputs]

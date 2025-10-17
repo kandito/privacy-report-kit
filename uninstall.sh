@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 PACK_DIR="$HOME/.gemini/packs/privacy-report-kit"
-CMD_LINK="$HOME/.gemini/commands/privacy-report.toml"
-rm -f "$CMD_LINK"
+rm -f "$HOME/.gemini/commands/privacy-report-json.toml"
+rm -f "$HOME/.gemini/commands/privacy-report-md.toml"
 rm -rf "$PACK_DIR"
 echo "🧹 Uninstalled Privacy Report Kit."
 
