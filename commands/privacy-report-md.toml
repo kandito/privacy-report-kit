@@ -53,6 +53,8 @@ version: "1.0"
 generated_at: "{{timestamp_iso}}"
 priority: "P1" # Triage priority: P0 (Critical), P1 (High), P2 (Medium)
 status: "Draft" # e.g., Draft, In Review, Final
+repo: "{{cwd}}"
+language_guess: "{{language_guess}}"
 # --- End of YAML Frontmatter ---
 
 # Privacy Report: {{project_name}}
@@ -63,34 +65,73 @@ status: "Draft" # e.g., Draft, In Review, Final
 
 ## 2. Identified Data Fields
 <!-- instruction: List all identified PII or sensitive data fields in a table. -->
-| Field Name      | Category  | Location (File:Line)          | Storage (Table.Column) |
-| --------------- | --------- | ----------------------------- | ---------------------- |
-| `user_email`    | PII       | `models/user.py:12`           | `users.email`          |
-| `session_token` | Auth      | `auth/session.go:88`          | `sessions.token`       |
-|                 |           |                               |                        |
+| Field Name      | Category  | Location (File:Line)          | Storage (Table.Column) | Aliases | Purpose | Legal Basis | Retention | Encryption | Indexing |
+| --------------- | --------- | ----------------------------- | ---------------------- | --- | --- | --- | --- | --- | --- |
+| `user_email`    | PII       | `models/user.py:12`           | `users.email`          | `email_address` | User identification | `contract` | `1 year` | `at_rest` | `true` |
+| `session_token` | Auth      | `auth/session.go:88`          | `sessions.token`       | | Session management | `legitimate_interest` | `session` | `in_transport` | `false` |
 
+**Code Snippets:**
+<!-- instruction: Provide code snippets for each identified data field. -->
+*   **`user_email`** (`models/user.py:12`):
+    '''python
+    class User(models.Model):
+        user_email = models.EmailField()
+    '''
 
 ## 3. Data Processing Activities
-<!-- instruction: Describe the primary ways data is used. Use a bulleted list. -->
-- **User Authentication:** Collecting and verifying credentials (`email`, `password_hash`).
-- **Analytics:** Tracking user interaction events for product improvement.
-- **...**
+<!-- instruction: Describe the primary ways data is used. -->
+### User Authentication
+*   **Description:** Collecting and verifying credentials (`email`, `password_hash`).
+*   **Data Subjects:** `users`
+*   **Operations:** `collect`, `store`
+*   **Controllers/Processors:** `self`
+
+### Analytics
+*   **Description:** Tracking user interaction events for product improvement.
+*   **Data Subjects:** `users`
+*   **Operations:** `collect`, `analyze`
+*   **Controllers/Processors:** `self`, `Google Analytics`
 
 
-## 4. Third-Party Integrations & Data Transfers
+## 4. Data Transfers
+<!-- instruction: Detail any data transfers to external services. -->
+| Destination | Mechanism | Purpose | Frequency |
+| --- | --- | --- | --- |
+| `Google Analytics` | `API` | `Product Analytics` | `real-time` |
+
+
+## 5. Third-Party Integrations
 <!-- instruction: Detail any external services that receive data. -->
-| Service Name | Type      | Data Shared                   | Purpose              |
-| ------------ | --------- | ----------------------------- | -------------------- |
-| Stripe       | Payment   | `user_email`, `customer_id`   | Payment Processing   |
-| Google Analytics | Analytics | `device_id`, `usage_events`   | Product Analytics    |
-|              |           |                               |                      |
+| Service Name | Type      | Data Shared                   | Purpose              | Endpoints | DPA/SCC |
+| ------------ | --------- | ----------------------------- | -------------------- | --- | --- |
+| Stripe       | Payment   | `user_email`, `customer_id`   | Payment Processing   | `api.stripe.com` | `link/to/dpa` |
+| Google Analytics | Analytics | `device_id`, `usage_events`   | Product Analytics    | `www.google-analytics.com` | `link/to/dpa` |
 
 
-## 5. Prioritized Recommendations
+## 6. Prioritized Recommendations
 <!-- instruction: List actionable recommendations, ordered by priority (P0 first). -->
-- **(P0) Critical:** Implement application-level encryption for the `auth_tokens` table. The current storage is in plaintext.
-- **(P1) High:** Add logging to audit access to sensitive user profile data.
-- **(P2) Medium:** Update the privacy policy to include the use of Google Analytics.
+### (P0) Critical: Implement application-level encryption for the `auth_tokens` table.
+*   **Action:** The current storage is in plaintext. Encrypt the tokens before storing them in the database.
+*   **References:** `link/to/doc`
+
+### (P1) High: Add logging to audit access to sensitive user profile data.
+*   **Action:** Implement logging to track who is accessing sensitive user data and when.
+*   **References:**
+
+### (P2) Medium: Update the privacy policy to include the use of Google Analytics.
+*   **Action:** The privacy policy should be updated to inform users about the use of Google Analytics for product analytics.
+*   **References:**
+
+
+## 7. Record of Processing Activities (ROPA)
+<!-- instruction: Populate the ROPA fields. -->
+*   **Controller:** `Your Company Name`
+*   **DPO:** `dpo@yourcompany.com`
+*   **Joint Controllers:**
+*   **DPIA Required:** `false`
+*   **Lawful Basis:** `contract`, `legitimate_interest`
+*   **Retention Policy:** `link/to/retention-policy`
+*   **Safeguards:** `Encryption`, `Access Control`
 
 TASK:
 1) Identify data fields (PII/sensitive/etc.) and map to code refs + DB (table/column) when visible.
