@@ -60,7 +60,7 @@ echo
 echo "=== Heuristics: External Integrations (SDKs/Webhooks/APIs) ==="
 rg -n --no-heading -S \
   -e '\baws|gcs|s3|firebase|mixpanel|amplitude|segment|facebook|google(ads|analytics)|mailchimp|mandrill|mailgun|sendgrid|twilio|whatsapp|telegram|slack|sentry|datadog|newrelic|shopify|zendesk|hubspot\b' \
-  "${TARGETS[@]}" || true
+  "${TARGETS[@]}" | rg -v '@Value' || true
 rg -n --no-heading -S -e '\bhttps?://[A-Za-z0-9\.\-_/]+(api|webhook)[A-Za-z0-9\.\-_/]*' "${TARGETS[@]}" || true
 
 echo
