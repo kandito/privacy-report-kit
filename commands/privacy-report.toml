@@ -45,18 +45,6 @@ Static signals from the chosen scope:
 ' }
 
 TEMPLATE:
----
-# YAML Frontmatter for metadata. Populate these fields.
-report_id: "pr-{{project_name | slugify}}-{{timestamp_iso}}"
-title: "Data Privacy & Compliance Report for {{project_name}}"
-version: "1.0"
-generated_at: "{{timestamp_iso}}"
-priority: "P1" # Triage priority: P0 (Critical), P1 (High), P2 (Medium)
-status: "Draft" # e.g., Draft, In Review, Final
-repo: "{{cwd}}"
-language_guess: "{{language_guess}}"
-# --- End of YAML Frontmatter ---
-
 # Privacy Report: {{project_name}}
 
 ## 1. Executive Summary
@@ -122,24 +110,12 @@ language_guess: "{{language_guess}}"
 *   **Action:** The privacy policy should be updated to inform users about the use of Google Analytics for product analytics.
 *   **References:**
 
-
-## 7. Record of Processing Activities (ROPA)
-<!-- instruction: Populate the ROPA fields. -->
-*   **Controller:** `Your Company Name`
-*   **DPO:** `dpo@yourcompany.com`
-*   **Joint Controllers:**
-*   **DPIA Required:** `false`
-*   **Lawful Basis:** `contract`, `legitimate_interest`
-*   **Retention Policy:** `link/to/retention-policy`
-*   **Safeguards:** `Encryption`, `Access Control`
-
 TASK:
 1) Identify data fields (PII/sensitive/etc.) and map to code refs + DB (table/column) when visible.
 2) Summarize processing activities (subjects, purpose, operations).
 3) List data transmissions (mechanism, destination, frequency).
 4) Enumerate external integrations (name, endpoints, data_shared, DPA/SCC if known).
 5) Provide prioritized recommendations (P0..P2).
-6) Populate the 'ropa' block with best-knowledge defaults; leave org identities blank if unknown.
 
 OUTPUT:
 Generate a Markdown report by populating the template below and store it to privacy/report.md
