@@ -1,5 +1,5 @@
 # .gemini/commands/privacy-report.toml
-name = "privacy-report-md"
+name = "privacy-report"
 description = "Scan selected paths and generate a structured privacy report in Markdown format."
 version = "1.0.0"
 
@@ -142,7 +142,7 @@ TASK:
 6) Populate the 'ropa' block with best-knowledge defaults; leave org identities blank if unknown.
 
 OUTPUT:
-Generate a Markdown report by populating the template below. Provide prioritized recommendations (P0..P2) and summarize findings clearly for both technical and non-technical audiences and store it to privacy/report.md
+Generate a Markdown report by populating the template below and store it to privacy/report.md
 """
 
 [inputs]
