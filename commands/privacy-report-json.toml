@@ -52,9 +52,8 @@ TASK:
 1) Identify data fields (PII/sensitive/etc.) and map to code refs + DB (table/column) when visible.
 2) Summarize processing activities (subjects, purpose, operations).
 3) List data transmissions (mechanism, destination, frequency).
-4) Enumerate external integrations (name, endpoints, data_shared, DPA/SCC if known).
+4) Enumerate external integrations (name, endpoints, data_shared).
 5) Provide prioritized recommendations (P0..P2).
-6) Populate the 'ropa' block with best-knowledge defaults; leave org identities blank if unknown.
 
 OUTPUT:
 Return ONLY a single valid JSON object exactly matching the schema (no markdown fence, no prose) 

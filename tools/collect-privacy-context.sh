@@ -46,15 +46,26 @@ rg -n --no-heading -S -g '!node_modules' \
   -e '\b(queryInterface\.createTable|queryInterface\.addColumn|queryInterface\.removeColumn|queryInterface\.changeColumn)\b' \
   -g '*.js' -g '*.ts' "${TARGETS[@]}" || true
 
+# --- Prisma schema ---
+rg -l 'datasource db' -g '*.prisma' "${TARGETS[@]}" | while read -r schema_file; do
+  ./tools/process-prisma-schema.sh "$schema_file"
+done || true
+
 # --- Spring Boot / JPA / Hibernate entities ---
-rg -n --no-heading -S \
-  -e '@Entity\b|@Table\b|@Column\b|@Id\b|@Join(Column|Table)\b|@GeneratedValue\b|extends\s+JpaRepository|CrudRepository|JpaSpecificationExecutor' \
-  -g '*.java' "${TARGETS[@]}" || true
+rg -l '@Entity' -g '*.java' "${TARGETS[@]}" | while read -r java_file; do
+  ./tools/process-jpa-entity.sh "$java_file"
+done || true
+
+rm ./tools/process-jpa-entity.sh
 
 # --- Mongoose (MongoDB) schema definitions ---
-rg -n --no-heading -S -g '!node_modules' \
-  -e '\b(mongoose\.model|Mongoose\.model|mongoose\.Schema|new\s+Schema\(|Schema\()\b' \
-  -g '*.js' -g '*.ts' "${TARGETS[@]}" || true
+rg -l 'mongoose\.model' -g '*.js' -g '*.ts' "${TARGETS[@]}" | while read -r model_file; do
+  ./tools/process-mongoose-model.sh "$model_file"
+done || true
+
+rm ./tools/process-jpa-entity.sh
+rm ./tools/process-mongoose-model.sh
+rm ./tools/process-prisma-schema.sh
 
 echo
 echo "=== Heuristics: External Integrations (SDKs/Webhooks/APIs) ==="

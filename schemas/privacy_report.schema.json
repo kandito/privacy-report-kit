@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PrivacyReport",
   "type": "object",
-  "required": ["generated_at", "project", "fields", "processing", "transfers", "integrations", "recommendations", "ropa"],
+  "required": ["generated_at", "project", "fields", "processing", "transfers", "integrations", "recommendations"],
   "properties": {
     "generated_at": { "type": "string", "format": "date-time" },
     "project": {
@@ -95,19 +95,6 @@
         "action": { "type": "string" },
         "references": { "type": "array", "items": { "type": "string" } }
       } }
-    },
-    "ropa": {
-      "type": "object",
-      "required": ["controller","dpo","joint_controllers","dpia_required","lawful_basis","retention_policy","safeguards"],
-      "properties": {
-        "controller": { "type": "string" },
-        "dpo": { "type": "string" },
-        "joint_controllers": { "type": "array", "items": { "type": "string" } },
-        "dpia_required": { "type": "boolean" },
-        "lawful_basis": { "type": "array", "items": { "type": "string" } },
-        "retention_policy": { "type": "string" },
-        "safeguards": { "type": "array", "items": { "type": "string" } }
-      }
     }
   }
 }

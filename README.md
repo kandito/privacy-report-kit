@@ -14,7 +14,25 @@ To install the Privacy Report Kit, run the following command in your terminal:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/kandito/privacy-report-kit/main/install.sh)"
 ```
 
-## Usage
+The `collect-privacy-context.sh` script is a powerful tool for identifying
+potential PII and data stores.
+
+### ORM Correlation
+
+The script can automatically correlate PII with storage locations for the following ORMs:
+
+*   **Spring JPA:** Extracts table and column names from `@Entity` annotated Java files.
+*   **Mongoose:** Extracts collection and field names from Mongoose schema files.
+*   **Prisma:** Extracts model and field names from Prisma schema files.
+
+### Current Limitations
+
+*   **Limited Automatic Correlation:** The script only automatically correlates
+    PII with storage locations for Spring JPA, Mongoose, and Prisma projects.
+    For other frameworks, manual analysis of the script's output is still
+    required.
+
+### Usage
 
 1.  Navigate to the root directory of a git repository.
 2.  Run the `privacy-report` command in your Gemini CLI:
