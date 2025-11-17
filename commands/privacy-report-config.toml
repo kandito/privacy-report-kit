@@ -1,0 +1,28 @@
+# .gemini/commands/privacy-report-config.toml
+name = "privacy-report-config"
+description = "Generate a default privacy-report.config.json file."
+version = "1.0.0"
+
+prompt = """
+SYSTEM:
+You are a helpful assistant that generates a configuration file.
+
+USER:
+Generate a `privacy-report.config.json` file with default values for `model_definition_paths` and `code_coverage_paths`.
+
+TASK:
+Generate a `privacy-report.config.json` file with the following content:
+```json
+{
+  "model_definition_paths": ["models/", "schemas/"],
+  "code_coverage_paths": ["controllers/", "routes/", "services/"]
+}
+```
+
+OUTPUT:
+Return ONLY a single valid JSON object exactly matching the schema (no markdown fence, no prose)
+and store it to privacy-report.config.json.
+"""
+
+[metadata]
+category = "privacy"

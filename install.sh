@@ -25,10 +25,14 @@ chmod +x "$PACK_DIR/tools/collect-privacy-context.sh"
 # Symlink commands
 ln -sf "$PACK_DIR/commands/privacy-report-json.toml" "$CMD_DIR/privacy-report-json.toml"
 ln -sf "$PACK_DIR/commands/privacy-report.toml" "$CMD_DIR/privacy-report.toml"
+ln -sf "$PACK_DIR/commands/privacy-report-config.toml" "$CMD_DIR/privacy-report-config.toml"
 
 echo "Checking dependencies…"
-command -v rg >/dev/null || echo "Warning: ripgrep (rg) not found. Install via: brew install ripgrep | apt-get install ripgrep"
-command -v jq >/dev/null || echo "Tip: jq optional but useful."
+command -v rg >/dev/null || { echo "Error: ripgrep (rg) not found. Install via: brew install ripgrep | apt-get install ripgrep"; exit 1; }
+command -v jq >/dev/null || { echo "Error: jq not found. Install via: brew install jq | apt-get install jq"; exit 1; }
 
 echo
-echo "✅ Installed. Usage (in any repo with Gemini CLI): /privacy-report-json and /privacy-report"
+echo "✅ Installed. Usage (in any repo with Gemini CLI):"
+echo "1. /privacy-report-config  # Generate a config file"
+echo "2. /privacy-report-json     # Generate a JSON report"
+echo "3. /privacy-report        # Generate a Markdown report"

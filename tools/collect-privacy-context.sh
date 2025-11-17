@@ -1,25 +1,67 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Use provided paths (space-separated) or default to '.'
-if [ "$#" -eq 0 ]; then
+# Default values
+MODEL_DEFS=()
+COVERAGE_DIRS=()
+
+# Parse arguments
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --model-defs)
+      shift
+      while [[ "$#" -gt 0 && ! "$1" =~ ^-- ]]; do
+        MODEL_DEFS+=("$1")
+        shift
+      done
+      ;;
+    --coverage-dirs)
+      shift
+      while [[ "$#" -gt 0 && ! "$1" =~ ^-- ]]; do
+        COVERAGE_DIRS+=("$1")
+        shift
+      done
+      ;;
+    *)
+      echo "Unknown parameter passed: $1"
+      exit 1
+      ;;
+  esac
+done
+
+# If no arguments are provided, scan the entire repository
+if [ ${#MODEL_DEFS[@]} -eq 0 ] && [ ${#COVERAGE_DIRS[@]} -eq 0 ]; then
   TARGETS=(".")
 else
-  TARGETS=()
-  for d in "$@"; do
-    d="${d#@}"              # allow '@dir' style
-    TARGETS+=("$d")
-  done
+  TARGETS=("${COVERAGE_DIRS[@]}")
 fi
 
 echo "=== Scan targets ==="
-printf '%s\n' "${TARGETS[@]}"
+if [ ${#MODEL_DEFS[@]} -gt 0 ]; then
+  echo "Model definitions: ${MODEL_DEFS[*]}"
+fi
+if [ ${#COVERAGE_DIRS[@]} -gt 0 ]; then
+  echo "Coverage directories: ${COVERAGE_DIRS[*]}"
+fi
+if [ ${#TARGETS[@]} -eq 1 ] && [ "${TARGETS[0]}" == "." ]; then
+    echo "Scanning entire repository."
+fi
+
 
 echo
 echo "=== Heuristics: Candidate Fields (PII, auth, finance) ==="
-rg -n --no-heading -S \
-  -e '\b(email|e-mail|phone|msisdn|full[_-]?name|first[_-]?name|last[_-]?name|dob|birth[_-]?date|nid|ktp|id_no|npwp|passport|address|street|city|province|postal|zip|lat|lng|location|imei|device[_-]?id|ip[_-]?address|card[_-]?number|pan|cvv|exp(ir|iry)|account[_-]?number|iban|swift|tax|salary|gender|religion|biometric|health)\b' \
-  "${TARGETS[@]}" || true
+if [ ${#MODEL_DEFS[@]} -gt 0 ]; then
+  PII_TERMS=$(rg -o -w -e '(email|e-mail|phone|msisdn|full[_-]?name|first[_-]?name|last[_-]?name|dob|birth[_-]?date|nid|ktp|id_no|npwp|passport|address|street|city|province|postal|zip|lat|lng|location|imei|device[_-]?id|ip[_-]?address|card[_-]?number|pan|cvv|exp(ir|iry)|account[_-]?number|iban|swift|tax|salary|gender|religion|biometric|health)' "${MODEL_DEFS[@]}" | sort -u)
+  for pii in $PII_TERMS; do
+    echo "Scanning for usage of '$pii' in coverage directories..."
+    rg -n --no-heading -S -e "$pii" "${COVERAGE_DIRS[@]}" || true
+  done
+else
+  rg -n --no-heading -S \
+    -e '\b(email|e-mail|phone|msisdn|full[_-]?name|first[_-]?name|last[_-]?name|dob|birth[_-]?date|nid|ktp|id_no|npwp|passport|address|street|city|province|postal|zip|lat|lng|location|imei|device[_-]?id|ip[_-]?address|card[_-]?number|pan|cvv|exp(ir|iry)|account[_-]?number|iban|swift|tax|salary|gender|religion|biometric|health)\b' \
+    "${TARGETS[@]}" || true
+fi
+
 
 echo
 echo "=== Heuristics: Auth/Session/JWT ==="
@@ -56,16 +98,10 @@ rg -l '@Entity' -g '*.java' "${TARGETS[@]}" | while read -r java_file; do
   ./tools/process-jpa-entity.sh "$java_file"
 done || true
 
-rm ./tools/process-jpa-entity.sh
-
 # --- Mongoose (MongoDB) schema definitions ---
 rg -l 'mongoose\.model' -g '*.js' -g '*.ts' "${TARGETS[@]}" | while read -r model_file; do
   ./tools/process-mongoose-model.sh "$model_file"
 done || true
-
-rm ./tools/process-jpa-entity.sh
-rm ./tools/process-mongoose-model.sh
-rm ./tools/process-prisma-schema.sh
 
 echo
 echo "=== Heuristics: External Integrations (SDKs/Webhooks/APIs) ==="

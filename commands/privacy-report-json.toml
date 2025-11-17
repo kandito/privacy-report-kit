@@ -1,7 +1,7 @@
 # .gemini/commands/privacy-report-json.toml
 name = "privacy-report-json"
 description = "Scan selected paths (default: repo) and generate a ROPA-ready privacy report JSON."
-version = "1.1.0"
+version = "1.2.0"
 
 prompt = """
 SYSTEM:
@@ -18,30 +18,36 @@ Repository context:
 - Repo path: {{cwd}}
 - Language guess (heuristic): {{language_guess}}
 
-Scan scope (user-chosen):
+Scan scope (from privacy-report.config.json):
 !{ bash -lc '
-  if [ -z "{{args}}" ]; then
-    echo "· paths: . (default)"
+  if [ -f "privacy-report.config.json" ]; then
+    echo "· Model definition paths: $(jq -r .model_definition_paths[] privacy-report.config.json)"
+    echo "· Code coverage paths: $(jq -r .code_coverage_paths[] privacy-report.config.json)"
   else
-    echo "· paths: {{args}}"
+    echo "· No privacy-report.config.json found, scanning entire repository."
   fi
 ' }
 
 # Dynamically include chosen directories.
 !{ bash -lc '
-  if [ -z "{{args}}" ]; then
-    echo "@."
-  else
-    for d in {{args}}; do
-      d="${d#@}"
+  if [ -f "privacy-report.config.json" ]; then
+    jq -r .code_coverage_paths[] privacy-report.config.json | while read -r d; do
       [ -e "$d" ] && echo "@$d"
     done
+  else
+    echo "@."
   fi
 ' }
 
 Static signals (grep/sql/orm) from the chosen scope:
 !{ bash -lc '
-  bash "$HOME/.gemini/packs/privacy-report-kit/tools/collect-privacy-context.sh" {{args}} 2>/dev/null || true
+  if [ -f "privacy-report.config.json" ]; then
+    bash "$HOME/.gemini/packs/privacy-report-kit/tools/collect-privacy-context.sh" \
+      --model-defs $(jq -r .model_definition_paths[] privacy-report.config.json) \
+      --coverage-dirs $(jq -r .code_coverage_paths[] privacy-report.config.json) 2>/dev/null || true
+  else
+    bash "$HOME/.gemini/packs/privacy-report-kit/tools/collect-privacy-context.sh" 2>/dev/null || true
+  fi
 ' }
 
 Schema shape (guidance only — do NOT echo; just produce JSON):
@@ -63,7 +69,7 @@ and store it to privacy/report.json.
 [inputs]
 project_name   = "!{basename \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"}"
 cwd            = "!{pwd}"
-language_guess = "!{ls -1 | tr '[:upper:]' '[:lower:]' | grep -E '\\.(ts|tsx|js|py|go|java|kt|rb|php|rs|cs)$' | sed 's/.*\\.//' | sort | uniq | tr '\\n' ',' | sed 's/,$//'}"
+language_guess = "!{ls -1 | tr '[:upper:]' '[:lower:]' | grep -E '\\.(ts|tsx|js|py|go|java|kt|rb|php|rs|cs) | sed 's/.*\\.//' | sort | uniq | tr '\\n' ',' | sed 's/,$//'}"
 
 [metadata]
 category = "privacy"
